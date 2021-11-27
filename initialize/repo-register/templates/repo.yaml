@@ -1,0 +1,26 @@
+# Sets up a template Repo
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.name | default .Release.name }}
+  namespace: {{ .Values.argocdnamespace }}
+  labels:
+    argocd.argoproj.io/secret-type: repo-creds
+data:
+{{- if .Values.githubAppID }}
+  url: {{ .Values.url | b64enc }}
+  githubAppID: {{ .Values.githubAppID | b64enc }}
+  githubAppInstallationID: {{ .Values.githubAppInstallationID | b64enc }}
+  {{- if .Values.githubAppEnterpriseBaseUrl }}
+  githubAppEnterpriseBaseUrl: {{ .Values.githubAppEnterpriseBaseUrl | b64enc }}
+  {{- end }}  
+  githubAppPrivateKey: {{ .Values.githubAppPrivateKey | b64enc }}
+{{- else }}
+  url: {{ .Values.url | b64enc }}
+  {{- if eq (substr 0 4 .Values.url) "http" }}
+  password: {{ .Values.password | b64enc }}
+  username: {{ .Values.username | b64enc}}
+  {{- else }}
+  sshPrivateKey: {{ .Values.sshPrivateKey | b64enc }}
+  {{- end }}
+{{- end }}
