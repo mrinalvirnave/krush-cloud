@@ -1,0 +1,27 @@
+# KRUSH.CLOUD Environment Setup
+
+You have created a service account that will ArgoCD will connect to.
+Do the following to let ArgoCD know.
+
+Step 1. Set the environment variables with the token and CA data
+
+SECRET_NAME=$(kubectl get serviceaccounts {{ include "env-init.serviceAccountName" . }} -n {{ .Release.Namespace }} -o jsonpath="{.secrets[0].name}")
+CA=$(kubectl get secret $SECRET_NAME -n {{ .Release.Namespace }} -o jsonpath="{.data.ca\.crt}")
+TOKEN=$(kubectl get secret $SECRET_NAME -n {{ .Release.Namespace }} -o jsonpath="{.data.token}" | base64 -d)
+CLUSTER_HOST=$(kubectl config view --minify -o jsonpath={.clusters[0].cluster.server})
+CLUSTER_NAME={{ .Release.Namespace }}_$(kubectl config view --minify -o jsonpath={.clusters[0].name})
+
+
+STEP 2. Run the Helm chart to register the environment with ArgoCD
+        (Switch kubectl context if needed)
+
+helm upgrade --install --set \
+"env.name={{ .Release.Name }},\
+env.namespace={{ .Release.Namespace }},\
+env.token=${TOKEN},\
+env.ca=${CA},\
+cluster.name=${CLUSTER_NAME},\
+cluster.host=${CLUSTER_HOST}" \
+{{ .Release.Name }}-env env-register -n argocd
+   
+----------------------------------------------

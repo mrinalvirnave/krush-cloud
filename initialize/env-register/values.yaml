@@ -1,0 +1,10 @@
+env:
+  name: KRUSH-TEST
+  namespace: KRUSH-TEST
+  token: ""
+  ca: ""
+
+cluster:
+  name: KRUSH-CLUSTER
+  host: ""
+  
